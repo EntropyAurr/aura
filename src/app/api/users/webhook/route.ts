@@ -1,4 +1,4 @@
-import { verifyWebhook } from "@clerk/nextjs/webhooks";
+import { verifyWebhook } from "@clerk/backend/webhooks";
 import { NextRequest } from "next/server";
 import supabase from "@/services/supabase";
 import { UserJSON } from "@clerk/nextjs/server";
@@ -6,9 +6,9 @@ import { UserJSON } from "@clerk/nextjs/server";
 export async function POST(req: NextRequest) {
   try {
     const evt = await verifyWebhook(req);
-
     const { data } = evt;
     const eventType = evt.type;
+
     const user = data as UserJSON;
 
     if (eventType === "user.created") {

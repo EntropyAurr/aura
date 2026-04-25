@@ -14,7 +14,7 @@ export function HomeNavBar() {
           <Link href="/">
             <div className="flex items-center gap-2 p-4">
               <Image src="/logo.png" alt="logo" width={40} height={40} className="rounded-full" />
-              <p className="text-xl font-semibold tracking-tight">Aurora</p>
+              <p className="text-xl font-semibold tracking-tight">AURA</p>
             </div>
           </Link>
 

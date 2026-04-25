@@ -8,7 +8,7 @@ import Providers from "@/provider/provider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "aurora",
+  title: "aura",
   description: "NEXTJS application",
   icons: "/logo.png",
 };
