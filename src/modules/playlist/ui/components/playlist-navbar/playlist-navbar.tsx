@@ -7,8 +7,8 @@ import { ThemeToggle } from "@/components/theme-toggle";
 
 export function PlaylistNavBar() {
   return (
-    <nav className="fixed top-0 right-0 left-0 z-50 flex h-16 items-center border-b px-3 pr-5 shadow-md">
-      <div className="flex w-full items-center gap-4">
+    <nav className="fixed top-0 right-0 left-0 z-50 flex h-16 items-center px-3 pr-5 shadow-md">
+      <div className="flex w-full items-center justify-between gap-4">
         <div className="flex shrink-0 items-center">
           <SidebarTrigger />
 

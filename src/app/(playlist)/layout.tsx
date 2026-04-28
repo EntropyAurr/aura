@@ -5,5 +5,5 @@ interface LayoutProps {
 }
 
 export default function Layout({ children }: LayoutProps) {
-  <PlaylistLayout>{children}</PlaylistLayout>;
+  return <PlaylistLayout>{children}</PlaylistLayout>;
 }
