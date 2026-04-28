@@ -12,7 +12,7 @@ export function PlaylistLayout({ children }: PlaylistLayoutProps) {
       <div className="w-full">
         <PlaylistNavBar />
 
-        <div className="flex min-h-screen pt-18">
+        <div className="flex min-h-screen pt-16">
           <PlaylistSideBar />
 
           <main className="flex-1 overflow-y-auto">{children}</main>

@@ -3,6 +3,7 @@ import { AuthButton } from "@/modules/auth/ui/components/auth-button";
 import Image from "next/image";
 import Link from "next/link";
 import { PlaylistCreateModal } from "../playlist-create-modal";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function PlaylistNavBar() {
   return (
@@ -22,6 +23,7 @@ export function PlaylistNavBar() {
         <div className="flex shrink-0 items-center gap-4">
           <PlaylistCreateModal />
           <AuthButton />
+          <ThemeToggle />
         </div>
       </div>
     </nav>

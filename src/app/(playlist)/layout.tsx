@@ -1,4 +1,4 @@
-import { PlaylistLayout } from "@/modules/playlist/layouts/playlist-layout";
+import { PlaylistLayout } from "@/modules/playlist/ui/layouts/playlist-layout";
 
 interface LayoutProps {
   children: React.ReactNode;
