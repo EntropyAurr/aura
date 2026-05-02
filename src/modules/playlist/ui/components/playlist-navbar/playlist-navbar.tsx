@@ -1,11 +1,17 @@
+"use client";
+
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { AuthButton } from "@/modules/auth/ui/components/auth-button";
 import Image from "next/image";
 import Link from "next/link";
 import { PlaylistCreateModal } from "../playlist-create-modal";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 export function PlaylistNavBar() {
+  const [open, setOpen] = useState(false);
+
   return (
     <nav className="fixed top-0 right-0 left-0 z-50 flex h-16 items-center px-3 pr-5 shadow-md">
       <div className="flex w-full items-center justify-between gap-4">
@@ -21,7 +27,8 @@ export function PlaylistNavBar() {
         </div>
 
         <div className="flex shrink-0 items-center gap-4">
-          <PlaylistCreateModal />
+          <Button onClick={() => setOpen(true)}>New Playlist</Button>
+          <PlaylistCreateModal open={open} onClose={() => setOpen(false)} />
           <AuthButton />
           <ThemeToggle />
         </div>

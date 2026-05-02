@@ -27,10 +27,20 @@ export const protectedProcedure = t.procedure.use(async function isAuthed(opts) 
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
 
+  const { data: user, error } = await supabase.from("users").select().eq("clerkId", ctx.clerkUserId).single();
+
+  if (error) {
+    throw new TRPCError({ code: "NOT_FOUND" });
+  }
+
+  if (!user) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+
   return opts.next({
     ctx: {
       ...ctx,
-      clerkUserId: ctx.clerkUserId,
+      user,
     },
   });
 });

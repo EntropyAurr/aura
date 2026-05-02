@@ -4,7 +4,7 @@ import z from "zod";
 
 export const userRouter = createTRPCRouter({
   getMany: protectedProcedure.query(async ({ ctx }) => {
-    const { data, error } = await ctx.supabase.from("users").select("*").eq("clerkId", ctx.clerkUserId).single();
+    const { data, error } = await ctx.supabase.from("users").select("*").eq("clerkId", ctx.clerkUserId!).single();
 
     if (error) throw new TRPCError({ code: "NOT_FOUND" });
 
@@ -21,8 +21,8 @@ export const userRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { data, error } = await ctx.supabase
         .from("users")
-        .update({ ...input, updatedAt: new Date() })
-        .eq("clerkId", ctx.clerkUserId)
+        .update({ ...input, updated_at: new Date().toISOString() })
+        .eq("clerkId", ctx.clerkUserId!)
         .select()
         .single();
 

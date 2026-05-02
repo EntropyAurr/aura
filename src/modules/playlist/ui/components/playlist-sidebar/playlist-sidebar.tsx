@@ -2,7 +2,7 @@
 
 import { Separator } from "@/components/ui/separator";
 import { Sidebar, SidebarGroup, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
-import { ListMusic } from "lucide-react";
+import { ListMusic, LogOutIcon } from "lucide-react";
 import Link from "next/link";
 
 export function PlaylistSideBar() {
@@ -24,7 +24,7 @@ export function PlaylistSideBar() {
           <SidebarMenuItem>
             <SidebarMenuButton tooltip="Exit playlist" asChild>
               <Link href="/">
-                <ListMusic className="size-5" />
+                <LogOutIcon className="size-5" />
                 <span className="text-sm">Exit playlist</span>
               </Link>
             </SidebarMenuButton>

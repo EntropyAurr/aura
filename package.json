@@ -7,12 +7,14 @@
     "dev:webhook": "cmd /c ngrok http 8000 --url profound-voice-tighten.ngrok-free.dev",
     "dev:all": "concurrently \"bun run dev:webhook\" \"bun run dev\"",
     "build": "next build",
+    "gen:types": "supabase gen types typescript --project-id auqnjrbjnjwflkcrbush > src/types/supabase.ts",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
     "@clerk/nextjs": "6.10.3",
+    "@hookform/resolvers": "^5.2.2",
     "@supabase/supabase-js": "^2.104.1",
     "@tanstack/react-query": "^5.100.5",
     "@trpc/client": "^11.16.0",
@@ -34,6 +36,7 @@
     "react": "19.2.4",
     "react-day-picker": "^9.14.0",
     "react-dom": "19.2.4",
+    "react-hook-form": "^7.75.0",
     "react-resizable-panels": "^4.10.0",
     "recharts": "3.8.0",
     "server-only": "^0.0.1",
