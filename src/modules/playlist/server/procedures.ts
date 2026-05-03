@@ -16,6 +16,22 @@ export const playlistsRouter = createTRPCRouter({
     return { playlist };
   }),
 
+  update: protectedProcedure.input(z.object({ id: z.number(), title: z.string() })).mutation(async ({ ctx, input }) => {
+    const { id: userId } = ctx.user;
+
+    if (!input.id) {
+      throw new TRPCError({ code: "BAD_REQUEST" });
+    }
+
+    const { data: updatedPlaylist, error } = await supabase.from("playlists").update({ title: input.title, updated_at: new Date().toISOString() }).eq("id", input.id).eq("userId", userId).select().single();
+
+    if (error) {
+      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: error.message });
+    }
+
+    return updatedPlaylist;
+  }),
+
   getOne: protectedProcedure.input(z.object({ id: z.number() })).query(async ({ ctx, input }) => {
     const { id: userId } = ctx.user;
 

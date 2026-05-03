@@ -5,18 +5,18 @@ export const dynamic = "force-dynamic";
 
 interface PageProps {
   params: Promise<{
-    playlistId: number;
+    playlistId: string;
   }>;
 }
 
 export default async function Page({ params }: PageProps) {
   const { playlistId } = await params;
 
-  void trpc.playlists.getOne.prefetch({ id: playlistId });
+  void trpc.playlists.getOne.prefetch({ id: Number(playlistId) });
 
   return (
     <HydrateClient>
-      <PlaylistView playlistId={playlistId} />
+      <PlaylistView playlistId={Number(playlistId)} />
     </HydrateClient>
   );
 }

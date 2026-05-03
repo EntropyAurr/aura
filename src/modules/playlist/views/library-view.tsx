@@ -2,9 +2,8 @@
 
 import { DEFAULT_LIMIT } from "@/constants";
 import { trpc } from "@/trpc/client";
-import Link from "next/link";
-
-console.log("trpc keys:", Object.keys(trpc));
+import { PlaylistSection } from "../ui/sections/playlist-section";
+import { PlaylistMenu } from "../ui/components/playlist-menu";
 
 export function LibraryView() {
   const [playlists] = trpc.playlists.getMany.useSuspenseInfiniteQuery(
@@ -17,13 +16,14 @@ export function LibraryView() {
   );
 
   return (
-    <div>
+    <div className="flex w-125 flex-col gap-4">
       {playlists.pages
         .flatMap((page) => page.items)
         .map((playlist) => (
-          <Link href={`/playlist/${playlist.id}`} key={playlist.id}>
-            {playlist.title}
-          </Link>
+          <div key={playlist.id} className="flex items-center justify-between gap-4">
+            <PlaylistSection playlist={playlist} />
+            <PlaylistMenu playlist={playlist} />
+          </div>
         ))}
     </div>
   );

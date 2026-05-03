@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 8000",
-    "dev:webhook": "cmd /c ngrok http 8000 --url profound-voice-tighten.ngrok-free.dev",
+    "dev:webhook": "cmd /c ngrok start --all --config C:/Users/ruabt/AppData/Local/ngrok/aura.yml",
     "dev:all": "concurrently \"bun run dev:webhook\" \"bun run dev\"",
     "build": "next build",
     "gen:types": "supabase gen types typescript --project-id auqnjrbjnjwflkcrbush > src/types/supabase.ts",

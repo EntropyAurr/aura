@@ -3,5 +3,5 @@ interface PageProps {
 }
 
 export function PlaylistView({ playlistId }: PageProps) {
-  return <div className="max-w-screen-lg px-4 pt-2.5">{playlistId}</div>;
+  return <div className="max-w-5xl px-4 pt-2.5">{playlistId}</div>;
 }
