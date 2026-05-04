@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MoreVerticalIcon, SquarePen, Trash2Icon } from "lucide-react";
 import { PlaylistRenameModal } from "./playlist-rename-modal";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 type PlaylistGetManyOuput = RouterOutputs["playlists"]["getMany"]["items"][number];
 
@@ -18,6 +19,7 @@ interface PlaylistMenuProps {
 
 export function PlaylistMenu({ playlist, variants = "ghost" }: PlaylistMenuProps) {
   const [renameOpen, setRenameOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const router = useRouter();
   const utils = trpc.useUtils();
@@ -61,7 +63,7 @@ export function PlaylistMenu({ playlist, variants = "ghost" }: PlaylistMenuProps
           Rename
         </DropdownMenuItem>
 
-        <DropdownMenuItem onClick={() => removePlaylist.mutate({ id: playlist.id })}>
+        <DropdownMenuItem onClick={() => setDeleteOpen(true)}>
           <Trash2Icon className="size-4" />
           Delete
         </DropdownMenuItem>
@@ -76,6 +78,20 @@ export function PlaylistMenu({ playlist, variants = "ghost" }: PlaylistMenuProps
           updatePlaylist.mutate({ id: playlist.id, title }, { onSuccess: () => setRenameOpen(false) });
         }}
       />
+
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete playlist</AlertDialogTitle>
+            <AlertDialogDescription>This action cannot be undone!</AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => removePlaylist.mutate({ id: playlist.id })}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DropdownMenu>
   );
 }
