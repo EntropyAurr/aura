@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import FileInput from "@/components/file-input";
 import { toast } from "sonner";
+import { Field, FieldError } from "@/components/ui/field";
 
 const schema = z.object({ id: z.number(), title: z.string(), artist: z.string(), song_url: z.string(), duration: z.number() });
 type FormData = z.infer<typeof schema>;
@@ -16,16 +17,17 @@ type FormData = z.infer<typeof schema>;
 interface SongCreateModalProps {
   open: boolean;
   onClose: () => void;
+  playlistId: number;
 }
 
-export function SongCreateModal({ open, onClose }: SongCreateModalProps) {
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    reset,
-    formState: { errors },
-  } = useForm<FormData>({ resolver: zodResolver(schema) });
+export function SongCreateModal({ open, onClose, playlistId }: SongCreateModalProps) {
+  const { register, handleSubmit, setValue, reset, formState } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      id: playlistId,
+    },
+  });
+  const { errors } = formState;
 
   const utils = trpc.useUtils();
 
@@ -52,6 +54,8 @@ export function SongCreateModal({ open, onClose }: SongCreateModalProps) {
 
     if (!selectedFile) return;
 
+    setValue("song_url", URL.createObjectURL(selectedFile));
+
     const audio = document.createElement("audio");
     audio.src = URL.createObjectURL(selectedFile);
 
@@ -64,18 +68,31 @@ export function SongCreateModal({ open, onClose }: SongCreateModalProps) {
 
   return (
     <ResponsiveModal title="Create a song" open={open} onOpenChange={handleClose}>
-      <form onSubmit={handleSubmit((data) => createSong.mutate(data))}>
+      <form
+        onSubmit={handleSubmit((data) => {
+          createSong.mutate(data);
+          console.log("submitting", data);
+        })}
+      >
         <div className="flex flex-col gap-4">
-          <Input {...register("title", { required: "This field is required" })} placeholder="Song title" />
-          {errors.title && <p className="mt-1 text-sm text-red-500">{errors.title.message}</p>}
+          <Field>
+            <Input {...register("title", { required: "This field is required" })} placeholder="Song title" />
+            <FieldError>{errors.title?.message && "TITLE ERROR"}</FieldError>
+          </Field>
 
-          <Input {...register("artist", { required: "This field is required" })} placeholder="Artist" />
-          {errors.artist && <p className="mt-1 text-sm text-red-500">{errors.artist.message}</p>}
+          <Field>
+            <Input {...register("artist", { required: "This field is required" })} placeholder="Artist" />
+            <FieldError>{errors.artist?.message && "ARTIST ERROR"}</FieldError>
+          </Field>
 
-          <Input type="hidden" {...register("duration")} />
+          <Field>
+            <Input type="hidden" {...register("duration")} />
+          </Field>
 
-          <FileInput {...register("song_url", { required: "This field is required" })} accept="audio/*" onChange={(e) => handleFileInput(e)} />
-          {errors.song_url && <p className="mt-1 text-sm text-red-500">{errors.song_url.message}</p>}
+          <Field>
+            <FileInput accept="audio/*" onChange={(e) => handleFileInput(e)} />
+            <FieldError>{errors.song_url?.message && "URL ERROR"}</FieldError>
+          </Field>
 
           <Button type="submit">Create song</Button>
         </div>
