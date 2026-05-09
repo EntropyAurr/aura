@@ -1,15 +1,15 @@
 "use client";
 
+import FileInput from "@/components/file-input";
 import { ResponsiveModal } from "@/components/responsive-modal";
-import z from "zod";
+import { Button } from "@/components/ui/button";
+import { Field, FieldError } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { trpc } from "@/trpc/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { trpc } from "@/trpc/client";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import FileInput from "@/components/file-input";
 import { toast } from "sonner";
-import { Field, FieldError } from "@/components/ui/field";
+import z from "zod";
 
 const schema = z.object({ id: z.number(), title: z.string(), artist: z.string(), song_url: z.string(), duration: z.number() });
 type FormData = z.infer<typeof schema>;
@@ -71,7 +71,6 @@ export function SongCreateModal({ open, onClose, playlistId }: SongCreateModalPr
       <form
         onSubmit={handleSubmit((data) => {
           createSong.mutate(data);
-          console.log("submitting", data);
         })}
       >
         <div className="flex flex-col gap-4">

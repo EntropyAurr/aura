@@ -52,18 +52,21 @@ export type Database = {
           id: number
           playlistId: number | null
           songId: number | null
+          updated_at: string | null
         }
         Insert: {
           created_at?: string
           id?: number
           playlistId?: number | null
           songId?: number | null
+          updated_at?: string | null
         }
         Update: {
           created_at?: string
           id?: number
           playlistId?: number | null
           songId?: number | null
+          updated_at?: string | null
         }
         Relationships: [
           {

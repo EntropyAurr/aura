@@ -83,11 +83,13 @@ export function PlaylistMenu({ playlist, variants = "ghost" }: PlaylistMenuProps
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete playlist</AlertDialogTitle>
+
             <AlertDialogDescription>This action cannot be undone!</AlertDialogDescription>
           </AlertDialogHeader>
 
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
+
             <AlertDialogAction onClick={() => removePlaylist.mutate({ id: playlist.id })}>Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

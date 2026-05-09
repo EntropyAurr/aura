@@ -13,7 +13,7 @@ export const playlistsRouter = createTRPCRouter({
       throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: error.message });
     }
 
-    return { playlist };
+    return playlist;
   }),
 
   update: protectedProcedure.input(z.object({ id: z.number(), title: z.string() })).mutation(async ({ ctx, input }) => {
