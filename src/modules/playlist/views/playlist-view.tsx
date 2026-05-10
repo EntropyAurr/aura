@@ -16,7 +16,7 @@ export function PlaylistView({ playlistId }: PageProps) {
   const [playlist] = trpc.playlists.getOne.useSuspenseQuery({ id: playlistId });
 
   return (
-    <div className="p-4">
+    <div className="w-full p-4">
       <div className="flex w-2xl items-center justify-between">
         <h2 className="text-xl font-bold">{playlist.title}</h2>
 

@@ -16,11 +16,11 @@ export function LibraryView() {
   );
 
   return (
-    <div className="flex w-125 flex-col gap-4">
+    <div className="flex flex-col gap-4">
       {playlists.pages
         .flatMap((page) => page.items)
         .map((playlist) => (
-          <div key={playlist.id} className="flex items-center justify-between gap-4">
+          <div key={playlist.id} className="flex w-2xl items-center justify-between">
             <PlaylistSection playlist={playlist} />
             <PlaylistMenu playlist={playlist} />
           </div>
