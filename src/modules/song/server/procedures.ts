@@ -5,23 +5,14 @@ import z from "zod";
 
 export const songsRouter = createTRPCRouter({
   create: protectedProcedure.input(z.object({ id: z.number(), title: z.string(), artist: z.string(), song_url: z.string(), duration: z.number() })).mutation(async ({ input }) => {
-    const hasSongUrl = input.song_url?.startsWith?.(supabaseUrl);
-    const songTitle = `${input.song_url}`.replaceAll(/[^\w.-]/g, "_");
-    const songUrl = hasSongUrl ? input.song_url : `${supabaseUrl}/storage/v1/object/public/songs/${songTitle}`;
+    const hasSongUrl = input.song_url?.startsWith?.(supabaseUrl.replace(/\/$/, ""));
+    const songUrl = hasSongUrl ? input.song_url : `${supabaseUrl}/storage/v1/object/public/songs/${input.song_url}`;
 
     const { data: song, error } = await supabase.from("songs").insert({ playlistId: input.id, title: input.title, artist: input.artist, song_url: songUrl, duration: input.duration }).select().single();
 
     if (error) {
       console.log(error);
       throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: error.message });
-    }
-
-    if (!hasSongUrl) {
-      const { error: storageError } = await supabase.storage.from("songs").upload(songUrl, input.song_url);
-
-      if (storageError) {
-        throw new Error("Song URL could not be found");
-      }
     }
 
     // Link song and playlist
@@ -36,7 +27,6 @@ export const songsRouter = createTRPCRouter({
     const { songId, playlistId } = input;
 
     if (!songId) throw new TRPCError({ code: "BAD_REQUEST", message: "songId could not be found" });
-
     if (!playlistId) throw new TRPCError({ code: "BAD_REQUEST", message: "playlistId could not be found" });
 
     const { data: removedSong, error } = await supabase.from("psRelations").delete().match({ songId: songId, playlistId: playlistId });
@@ -54,16 +44,22 @@ export const songsRouter = createTRPCRouter({
     }
 
     // 1. Get the song row to know the file path
-    const { data: song, error: fetchError } = await supabase.from("songs").select("song_url").eq("id", input.id);
+    const { data: song, error: fetchError } = await supabase.from("songs").select("song_url").eq("id", input.id).single();
 
     if (fetchError) {
       throw new TRPCError({ code: "BAD_REQUEST", message: "Could not fetch song before deleting" });
     }
 
-    let urlToDelete = song[0]?.song_url;
+    let urlToDelete: string | null = null;
 
-    if (song[0].song_url?.startsWith(supabaseUrl)) {
-      urlToDelete = song[0].song_url.split("/storage/v1/object/public/songs/")[1];
+    if (song.song_url) {
+      const storagePrefix = `${supabaseUrl}/storage/v1/object/public/songs/`;
+
+      if (song.song_url.startsWith(storagePrefix)) {
+        urlToDelete = decodeURIComponent(song.song_url.replace(storagePrefix, ""));
+      } else {
+        urlToDelete = song.song_url;
+      }
     }
 
     // 2. Remove related playlist entries first

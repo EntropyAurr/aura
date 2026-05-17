@@ -4,8 +4,20 @@ import { trpc } from "@/trpc/client";
 import { DEFAULT_LIMIT } from "@/constants";
 import { PlaylistSection } from "../ui/sections/playlist-section";
 import { PlaylistMenu } from "../ui/components/playlist-menu";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 
 export function LibraryView() {
+  return (
+    <Suspense fallback={<p>Loading Library...</p>}>
+      <ErrorBoundary fallback={<p>Error Library</p>}>
+        <LibraryViewSuspense />
+      </ErrorBoundary>
+    </Suspense>
+  );
+}
+
+export function LibraryViewSuspense() {
   const [playlists] = trpc.playlists.getMany.useSuspenseInfiniteQuery(
     {
       limit: DEFAULT_LIMIT,

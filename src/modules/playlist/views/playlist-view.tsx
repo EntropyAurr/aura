@@ -1,16 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { trpc } from "@/trpc/client";
 import { Button } from "@/components/ui/button";
 import { SongCreateModal } from "@/modules/song/ui/components/song-create-modal";
 import { SongView } from "@/modules/song/views/song-view";
+import { ErrorBoundary } from "react-error-boundary";
 
 interface PageProps {
   playlistId: number;
 }
 
 export function PlaylistView({ playlistId }: PageProps) {
+  return (
+    <Suspense fallback={<p>Loading Playlist...</p>}>
+      <ErrorBoundary fallback={<p>Error Playlist</p>}>
+        <PlaylistViewSuspense playlistId={playlistId} />
+      </ErrorBoundary>
+    </Suspense>
+  );
+}
+
+export function PlaylistViewSuspense({ playlistId }: PageProps) {
   const [open, setOpen] = useState(false);
 
   const [playlist] = trpc.playlists.getOne.useSuspenseQuery({ id: playlistId });

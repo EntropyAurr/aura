@@ -21,12 +21,39 @@ function getQueryClient() {
   return (clientQueryClientSingleton ??= makeQueryClient());
 }
 
+function getUrl() {
+  const base = (() => {
+    // if on the brower
+    if (typeof window !== "undefined") return "";
+
+    // if on the server
+    if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+
+    // local development case
+    return "http://localhost:8000";
+  })();
+
+  return `${base}/api/trpc`;
+}
+
 export function TRPCProvider(props: Readonly<{ children: React.ReactNode }>) {
   const queryClient = getQueryClient();
 
   const [trpcClient] = useState(() =>
     trpc.createClient({
-      links: [httpBatchLink({ url: "/api/trpc", transformer: SuperJSON })],
+      links: [
+        httpBatchLink({
+          transformer: SuperJSON,
+          url: getUrl(),
+          async headers() {
+            const headers = new Headers();
+
+            headers.set("x-trpc-source", "nextjs-react");
+
+            return headers;
+          },
+        }),
+      ],
     }),
   );
 

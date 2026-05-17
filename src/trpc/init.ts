@@ -34,7 +34,7 @@ export const protectedProcedure = t.procedure.use(async function isAuthed(opts) 
   }
 
   if (!user) {
-    throw new TRPCError({ code: "UNAUTHORIZED" });
+    throw new TRPCError({ code: "UNAUTHORIZED", message: "USER NOT FOUND" });
   }
 
   return opts.next({

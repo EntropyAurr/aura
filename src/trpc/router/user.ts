@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure } from "../init";
 import z from "zod";
 
-export const userRouter = createTRPCRouter({
+export const usersRouter = createTRPCRouter({
   getMany: protectedProcedure.query(async ({ ctx }) => {
     const { data, error } = await ctx.supabase.from("users").select("*").eq("clerkId", ctx.clerkUserId!).single();
 
