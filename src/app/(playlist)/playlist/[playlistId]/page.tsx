@@ -1,5 +1,5 @@
-import { PlaylistView } from "@/modules/playlist/views/playlist-view";
 import { HydrateClient, trpc } from "@/trpc/server";
+import { PlaylistView } from "@/modules/playlist/views/playlist-view";
 
 export const dynamic = "force-dynamic";
 

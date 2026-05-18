@@ -21,12 +21,12 @@ export function SongView({ playlistId }: SongViewProps) {
       {songs.pages
         .flatMap((page) => page.items)
         .map((songDetail) => (
-          <div key={songDetail.psId} className="flex w-full items-center">
-            {/* <span>{songDetail.songs?.title}</span>
+          <div key={songDetail.psId} className="mt-4 flex w-full items-center justify-between">
+            <span>{songDetail.songs?.title}</span>
             <span>{songDetail.songs?.artist}</span>
-            <span>{songDetail.songs?.duration}</span> */}
+            <span>{songDetail.songs?.duration}</span>
 
-            <div className="min-w-0 flex-1 overflow-hidden break-all">{JSON.stringify(songDetail)}</div>
+            {/* <div className="min-w-0 flex-1 overflow-hidden break-all">{JSON.stringify(songDetail)}</div> */}
 
             <SongMenu song={songDetail} />
           </div>

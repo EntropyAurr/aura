@@ -1,10 +1,10 @@
 "use client";
 
-import { Suspense, useState } from "react";
-import { trpc } from "@/trpc/client";
 import { Button } from "@/components/ui/button";
 import { SongCreateModal } from "@/modules/song/ui/components/song-create-modal";
 import { SongView } from "@/modules/song/views/song-view";
+import { trpc } from "@/trpc/client";
+import { Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
 interface PageProps {

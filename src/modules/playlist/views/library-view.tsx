@@ -1,11 +1,11 @@
 "use client";
 
-import { trpc } from "@/trpc/client";
 import { DEFAULT_LIMIT } from "@/constants";
-import { PlaylistSection } from "../ui/sections/playlist-section";
-import { PlaylistMenu } from "../ui/components/playlist-menu";
+import { trpc } from "@/trpc/client";
+import Link from "next/link";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { PlaylistMenu } from "../ui/components/playlist-menu";
 
 export function LibraryView() {
   return (
@@ -33,7 +33,10 @@ export function LibraryViewSuspense() {
         .flatMap((page) => page.items)
         .map((playlist) => (
           <div key={playlist.id} className="flex w-2xl items-center justify-between">
-            <PlaylistSection playlist={playlist} />
+            <Link href={`/playlist/${playlist.id}`}>
+              <h2 className="text-xl font-medium">{playlist.title}</h2>
+            </Link>
+
             <PlaylistMenu playlist={playlist} />
           </div>
         ))}
