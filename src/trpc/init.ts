@@ -24,7 +24,7 @@ export const protectedProcedure = t.procedure.use(async function isAuthed(opts) 
   const { ctx } = opts;
 
   if (!ctx.clerkUserId) {
-    throw new TRPCError({ code: "UNAUTHORIZED" });
+    throw new TRPCError({ code: "UNAUTHORIZED", message: "TEST" });
   }
 
   const { data: user, error } = await supabase.from("users").select().eq("clerkId", ctx.clerkUserId).single();

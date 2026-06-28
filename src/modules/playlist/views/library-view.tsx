@@ -17,7 +17,7 @@ export function LibraryView() {
   );
 }
 
-export function LibraryViewSuspense() {
+function LibraryViewSuspense() {
   const [playlists] = trpc.playlists.getMany.useSuspenseInfiniteQuery(
     {
       limit: DEFAULT_LIMIT,

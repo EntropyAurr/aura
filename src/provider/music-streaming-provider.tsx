@@ -19,6 +19,7 @@ export interface MusicStreamingContextType {
   currentPlayedPlaylist: Playlist[];
   handleVolume: (value: number) => void;
   handlePlaySong: (id: number, listOfSongs?: Playlist[]) => void;
+  handlePauseSong: () => void;
 }
 
 const defaultContext: MusicStreamingContextType = {
@@ -31,6 +32,7 @@ const defaultContext: MusicStreamingContextType = {
   currentPlayedPlaylist: [],
   handleVolume: () => {},
   handlePlaySong: () => {},
+  handlePauseSong: () => {},
 };
 
 export interface Song {
@@ -52,16 +54,16 @@ export function useMusicStreaming(): MusicStreamingContextType {
 }
 
 export default function MusicStreamingProvider({ children }: { children: React.ReactNode }) {
-  const [playlists] = trpc.playlists.getMany.useSuspenseInfiniteQuery(
-    {
-      limit: DEFAULT_LIMIT,
-    },
-    {
-      getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-    },
-  );
+  // const [playlists] = trpc.playlists.getMany.useSuspenseInfiniteQuery(
+  //   {
+  //     limit: DEFAULT_LIMIT,
+  //   },
+  //   {
+  //     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+  //   },
+  // );
 
-  const audioRef = useRef<HTMLAudioElement>(new Audio());
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const songRef = useRef<Playlist | null>(null);
 
   const [volume, setVolume] = useState<number>(15);
@@ -71,6 +73,10 @@ export default function MusicStreamingProvider({ children }: { children: React.R
   const [currentSongId, setCurrentSongId] = useState<number | null>(null);
   const [currentSongTime, setCurrentSongTime] = useState<number>(0);
   const [progress, setProgress] = useState<number>(0);
+
+  useEffect(() => {
+    audioRef.current = new Audio();
+  }, []);
 
   // VOLUME adjustment
   useEffect(() => {
@@ -100,9 +106,12 @@ export default function MusicStreamingProvider({ children }: { children: React.R
 
     if (!songRef.current || songRef.current.songId !== id) {
       if (!song.songs?.song_url) return;
-      audioRef.current.src = song.songs.song_url;
 
-      audioRef.current.currentTime = 0;
+      if (audioRef.current) {
+        audioRef.current.src = song.songs.song_url;
+        audioRef.current.currentTime = 0;
+      }
+
       setCurrentSongTime(0);
       setProgress(0);
     }
@@ -111,7 +120,7 @@ export default function MusicStreamingProvider({ children }: { children: React.R
     setDuration(song.songs?.duration ?? null);
     setCurrentPlayedPlaylist(listOfSongs);
 
-    audioRef.current.play().catch((error: Error) => {
+    audioRef.current?.play().catch((error: Error) => {
       if (error.name !== "AbortError") {
         console.error("Playback failed:", error);
       }
@@ -121,5 +130,14 @@ export default function MusicStreamingProvider({ children }: { children: React.R
     setIsPlaying(true);
   }, []);
 
-  return <MusicStreaming.Provider value={{ volume, isPlaying, duration, currentSongId, currentSongTime, progress, currentPlayedPlaylist, handleVolume, handlePlaySong }}>{children}</MusicStreaming.Provider>;
+  // PAUSE song
+  function handlePauseSong() {
+    if (audioRef.current) {
+      setCurrentSongTime(audioRef.current.currentTime);
+      audioRef.current.pause();
+    }
+    setIsPlaying(false);
+  }
+
+  return <MusicStreaming.Provider value={{ volume, isPlaying, duration, currentSongId, currentSongTime, progress, currentPlayedPlaylist, handleVolume, handlePlaySong, handlePauseSong }}>{children}</MusicStreaming.Provider>;
 }
