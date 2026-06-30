@@ -1,30 +1,36 @@
 "use client";
 
-import { DEFAULT_LIMIT } from "@/constants";
+import { useAuth } from "@clerk/nextjs";
 import { trpc } from "@/trpc/client";
+import { useMusicStreaming } from "@/provider/music-streaming-provider";
+import { DEFAULT_LIMIT } from "@/constants";
 import { SongMenu } from "../ui/components/song-menu";
 import { Button } from "@/components/ui/button";
-import { useMusicStreaming } from "@/provider/music-streaming-provider";
 
 interface SongViewProps {
   playlistId: number;
 }
 
 export function SongView({ playlistId }: SongViewProps) {
-  const [songs] = trpc.songs.getMany.useSuspenseInfiniteQuery(
+  const { handlePlaySong } = useMusicStreaming();
+
+  const { isLoaded, isSignedIn } = useAuth();
+
+  const { data: songs, isLoading } = trpc.songs.getMany.useInfiniteQuery(
     { id: playlistId, limit: DEFAULT_LIMIT },
     {
       getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+      enabled: isLoaded && isSignedIn,
     },
   );
 
-  const flatSongs = songs.pages.flatMap((page) => page.items);
+  if (!isLoaded || isLoading) return <p>Loading songs...</p>;
 
-  const { handlePlaySong } = useMusicStreaming();
+  const flatSongs = songs?.pages.flatMap((page) => page.items);
 
   return (
     <ul className="mt-5 w-full">
-      {flatSongs.map((songDetail) => (
+      {flatSongs?.map((songDetail) => (
         <li key={songDetail.psId} className="mt-4 flex w-full items-center justify-between">
           <Button
             onClick={() => {

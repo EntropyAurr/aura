@@ -2,16 +2,14 @@
 
 import { Button } from "@/components/ui/button";
 import { SongCreateModal } from "@/modules/song/ui/components/song-create-modal";
+import { SongView } from "@/modules/song/views/song-view";
 import { trpc } from "@/trpc/client";
 import { Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import dynamic from "next/dynamic";
 
 interface PageProps {
   playlistId: number;
 }
-
-const SongView = dynamic(() => import("@/modules/song/views/song-view").then((m) => ({ default: m.SongView })), { ssr: false, loading: () => <p>Loading songs...</p> });
 
 export function PlaylistView({ playlistId }: PageProps) {
   return (
