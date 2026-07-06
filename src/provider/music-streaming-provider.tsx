@@ -1,7 +1,5 @@
 "use client";
 
-import { DEFAULT_LIMIT } from "@/constants";
-import { trpc } from "@/trpc/client";
 import { AppRouter } from "@/trpc/router/_app";
 import { inferRouterOutputs } from "@trpc/server";
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
@@ -12,6 +10,9 @@ export type Playlist = RouterOutput["songs"]["getMany"]["items"][number];
 export interface MusicStreamingContextType {
   volume: number;
   isPlaying: boolean;
+  isEnding: boolean;
+  setIsPlaying: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsEnding: React.Dispatch<React.SetStateAction<boolean>>;
   duration: number | null;
   currentSongId: number | null;
   currentSongTime: number;
@@ -20,11 +21,17 @@ export interface MusicStreamingContextType {
   handleVolume: (value: number) => void;
   handlePlaySong: (id: number, listOfSongs?: Playlist[]) => void;
   handlePauseSong: () => void;
+  getCurrentSong: () => void;
+  audioRef: React.RefObject<HTMLAudioElement | null>;
+  songRef: React.RefObject<Playlist | null>;
 }
 
 const defaultContext: MusicStreamingContextType = {
   volume: 15,
   isPlaying: false,
+  setIsPlaying: () => {},
+  isEnding: false,
+  setIsEnding: () => {},
   duration: null,
   currentSongId: null,
   currentSongTime: 0,
@@ -33,6 +40,9 @@ const defaultContext: MusicStreamingContextType = {
   handleVolume: () => {},
   handlePlaySong: () => {},
   handlePauseSong: () => {},
+  getCurrentSong: () => {},
+  audioRef: { current: null },
+  songRef: { current: null },
 };
 
 export interface Song {
@@ -54,20 +64,12 @@ export function useMusicStreaming(): MusicStreamingContextType {
 }
 
 export default function MusicStreamingProvider({ children }: { children: React.ReactNode }) {
-  // const [playlists] = trpc.playlists.getMany.useSuspenseInfiniteQuery(
-  //   {
-  //     limit: DEFAULT_LIMIT,
-  //   },
-  //   {
-  //     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-  //   },
-  // );
-
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const songRef = useRef<Playlist | null>(null);
 
   const [volume, setVolume] = useState<number>(15);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [isEnding, setIsEnding] = useState<boolean>(false);
   const [duration, setDuration] = useState<number | null>(null);
   const [currentPlayedPlaylist, setCurrentPlayedPlaylist] = useState<Playlist[]>([]);
   const [currentSongId, setCurrentSongId] = useState<number | null>(null);
@@ -83,7 +85,11 @@ export default function MusicStreamingProvider({ children }: { children: React.R
     if (audioRef.current) {
       audioRef.current.volume = volume / 100;
     }
-  }, []);
+  }, [volume]);
+
+  function getCurrentSong() {
+    return currentPlayedPlaylist?.find((song) => song.songId === currentSongId)?.songs ?? songRef.current?.songs ?? null;
+  }
 
   function handleVolume(value: number) {
     if (audioRef.current) {
@@ -139,5 +145,5 @@ export default function MusicStreamingProvider({ children }: { children: React.R
     setIsPlaying(false);
   }
 
-  return <MusicStreaming.Provider value={{ volume, isPlaying, duration, currentSongId, currentSongTime, progress, currentPlayedPlaylist, handleVolume, handlePlaySong, handlePauseSong }}>{children}</MusicStreaming.Provider>;
+  return <MusicStreaming.Provider value={{ volume, isPlaying, setIsPlaying, isEnding, setIsEnding, duration, currentSongId, currentSongTime, progress, currentPlayedPlaylist, handleVolume, handlePlaySong, handlePauseSong, getCurrentSong, audioRef, songRef }}>{children}</MusicStreaming.Provider>;
 }
