@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Pause, Play } from "lucide-react";
 
 export function TogglePlay() {
-  const { audioRef, isPlaying, setIsPlaying, isEnding, setIsEnding, handlePlaySong, handlePauseSong, currentSongId, currentPlayedPlaylist } = useMusicStreaming();
+  const { audioRef, songIndex, isPlaying, setIsPlaying, isEnding, setIsEnding, handlePlaySong, handlePauseSong, currentSongId, currentPlayedPlaylist } = useMusicStreaming();
 
   useEffect(function () {
     const audio = audioRef.current;
@@ -15,29 +15,41 @@ export function TogglePlay() {
 
     const handlePlay = () => setIsPlaying(true);
     const handlePause = () => setIsPlaying(false);
-    const handleEnd = () => {
+    const handleEnded = () => {
       setIsPlaying(false);
       setIsEnding(true);
     };
 
     audio.addEventListener("play", handlePlay);
     audio.addEventListener("pause", handlePause);
-    audio.addEventListener("end", handleEnd);
+    audio.addEventListener("ended", handleEnded);
 
     return () => {
       audio.removeEventListener("play", handlePlay);
       audio.removeEventListener("pause", handlePause);
-      audio.removeEventListener("ended", handleEnd);
+      audio.removeEventListener("ended", handleEnded);
     };
   }, []);
 
   function handleToggle() {
+    if (isEnding) {
+      const firstSong = currentPlayedPlaylist[0];
+
+      if (firstSong?.songId != null) {
+        handlePlaySong(firstSong.songId, currentPlayedPlaylist);
+        setIsEnding(false);
+      }
+
+      return;
+    }
+
     if (isPlaying) {
       handlePauseSong();
-      setIsPlaying(false);
-    } else {
+      return;
+    }
+
+    if (currentSongId != null) {
       handlePlaySong(currentSongId, currentPlayedPlaylist);
-      setIsPlaying(true);
     }
   }
 

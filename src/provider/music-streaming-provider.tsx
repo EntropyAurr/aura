@@ -9,17 +9,22 @@ export type Playlist = RouterOutput["songs"]["getMany"]["items"][number];
 
 export interface MusicStreamingContextType {
   volume: number;
+  setVolume: React.Dispatch<React.SetStateAction<number>>;
   isPlaying: boolean;
-  isEnding: boolean;
   setIsPlaying: React.Dispatch<React.SetStateAction<boolean>>;
+  isEnding: boolean;
   setIsEnding: React.Dispatch<React.SetStateAction<boolean>>;
+  isLoopSong: boolean;
+  setIsLoopSong: React.Dispatch<React.SetStateAction<boolean>>;
+  songIndex: number | null;
+  setSongIndex: React.Dispatch<React.SetStateAction<number>>;
   duration: number | null;
   currentSongId: number | null;
   currentSongTime: number;
   progress: number;
   currentPlayedPlaylist: Playlist[];
   handleVolume: (value: number) => void;
-  handlePlaySong: (id: number, listOfSongs?: Playlist[]) => void;
+  handlePlaySong: (songId: number, playlist?: Playlist[]) => void;
   handlePauseSong: () => void;
   getCurrentSong: () => void;
   audioRef: React.RefObject<HTMLAudioElement | null>;
@@ -28,10 +33,15 @@ export interface MusicStreamingContextType {
 
 const defaultContext: MusicStreamingContextType = {
   volume: 15,
+  setVolume: () => {},
   isPlaying: false,
   setIsPlaying: () => {},
   isEnding: false,
   setIsEnding: () => {},
+  isLoopSong: false,
+  setIsLoopSong: () => {},
+  songIndex: null,
+  setSongIndex: () => {},
   duration: null,
   currentSongId: null,
   currentSongTime: 0,
@@ -70,7 +80,9 @@ export default function MusicStreamingProvider({ children }: { children: React.R
   const [volume, setVolume] = useState<number>(15);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [isEnding, setIsEnding] = useState<boolean>(false);
+  const [isLoopSong, setIsLoopSong] = useState(false);
   const [duration, setDuration] = useState<number | null>(null);
+  const [songIndex, setSongIndex] = useState(-1);
   const [currentPlayedPlaylist, setCurrentPlayedPlaylist] = useState<Playlist[]>([]);
   const [currentSongId, setCurrentSongId] = useState<number | null>(null);
   const [currentSongTime, setCurrentSongTime] = useState<number>(0);
@@ -87,10 +99,6 @@ export default function MusicStreamingProvider({ children }: { children: React.R
     }
   }, [volume]);
 
-  function getCurrentSong() {
-    return currentPlayedPlaylist?.find((song) => song.songId === currentSongId)?.songs ?? songRef.current?.songs ?? null;
-  }
-
   function handleVolume(value: number) {
     if (audioRef.current) {
       audioRef.current.volume = value / 100;
@@ -99,18 +107,25 @@ export default function MusicStreamingProvider({ children }: { children: React.R
     setVolume(value);
   }
 
+  // Get current song
+  function getCurrentSong() {
+    return currentPlayedPlaylist?.find((song) => song.songId === currentSongId)?.songs ?? songRef.current?.songs ?? null;
+  }
+
   // PLAY song
-  const handlePlaySong = useCallback((id: number, listOfSongs?: Playlist[]) => {
-    if (!listOfSongs) {
+  const handlePlaySong = useCallback((songId: number, playlist?: Playlist[]) => {
+    if (!playlist) {
       console.log("No playlist available");
       return;
     }
 
-    const song = listOfSongs.find((song) => song.songId === id);
+    const song = playlist.find((song) => song.songId === songId);
 
     if (!song) return;
 
-    if (!songRef.current || songRef.current.songId !== id) {
+    const index = playlist.indexOf(song);
+
+    if (!songRef.current || songRef.current.songId !== songId) {
       if (!song.songs?.song_url) return;
 
       if (audioRef.current) {
@@ -124,7 +139,7 @@ export default function MusicStreamingProvider({ children }: { children: React.R
 
     songRef.current = song;
     setDuration(song.songs?.duration ?? null);
-    setCurrentPlayedPlaylist(listOfSongs);
+    setCurrentPlayedPlaylist(playlist);
 
     audioRef.current?.play().catch((error: Error) => {
       if (error.name !== "AbortError") {
@@ -132,8 +147,10 @@ export default function MusicStreamingProvider({ children }: { children: React.R
       }
     });
 
+    setIsEnding(false);
     setCurrentSongId(song.songId);
     setIsPlaying(true);
+    setSongIndex(index);
   }, []);
 
   // PAUSE song
@@ -145,5 +162,55 @@ export default function MusicStreamingProvider({ children }: { children: React.R
     setIsPlaying(false);
   }
 
-  return <MusicStreaming.Provider value={{ volume, isPlaying, setIsPlaying, isEnding, setIsEnding, duration, currentSongId, currentSongTime, progress, currentPlayedPlaylist, handleVolume, handlePlaySong, handlePauseSong, getCurrentSong, audioRef, songRef }}>{children}</MusicStreaming.Provider>;
+  // NEXT song
+  const handleNext = useCallback(() => {
+    if (!currentPlayedPlaylist?.length || currentSongId === null) return;
+
+    if (songIndex === -1) return;
+
+    if (songIndex === currentPlayedPlaylist.length - 1) {
+      setIsEnding(true);
+      setIsPlaying(false);
+      return;
+    }
+
+    const nextSong = currentPlayedPlaylist[songIndex + 1];
+
+    if (nextSong?.songId != null) {
+      handlePlaySong(nextSong.songId, currentPlayedPlaylist);
+    }
+  }, [songIndex, currentPlayedPlaylist]);
+
+  useEffect(
+    function () {
+      const audio = audioRef.current;
+
+      if (!audio) return;
+
+      if (!songRef.current) return;
+
+      function handleEnded() {
+        if (songIndex === -1) return;
+
+        const song = currentPlayedPlaylist[songIndex];
+
+        if (song.songId === null) return;
+
+        if (!isLoopSong) {
+          handleNext();
+        } else {
+          handlePlaySong(song.songId, currentPlayedPlaylist);
+        }
+      }
+
+      audio.addEventListener("ended", handleEnded);
+
+      return () => {
+        audio.removeEventListener("ended", handleEnded);
+      };
+    },
+    [songIndex, currentPlayedPlaylist, handlePlaySong, handleNext],
+  );
+
+  return <MusicStreaming.Provider value={{ volume, setVolume, isPlaying, setIsPlaying, isEnding, setIsEnding, isLoopSong, setIsLoopSong, duration, songIndex, setSongIndex, currentSongId, currentSongTime, progress, currentPlayedPlaylist, handleVolume, handlePlaySong, handlePauseSong, getCurrentSong, audioRef, songRef }}>{children}</MusicStreaming.Provider>;
 }
