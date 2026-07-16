@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Pause, Play } from "lucide-react";
 
 export function TogglePlay() {
-  const { audioRef, songIndex, isPlaying, setIsPlaying, isEnding, setIsEnding, handlePlaySong, handlePauseSong, currentSongId, currentPlayedPlaylist } = useMusicStreaming();
+  const { audioRef, isPlaying, setIsPlaying, isEnding, setIsEnding, handlePlaySong, handlePauseSong, currentSongId, currentPlayedPlaylist } = useMusicStreaming();
 
   useEffect(function () {
     const audio = audioRef.current;

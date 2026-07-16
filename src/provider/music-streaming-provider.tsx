@@ -24,6 +24,7 @@ export interface MusicStreamingContextType {
   progress: number;
   currentPlayedPlaylist: Playlist[];
   handleVolume: (value: number) => void;
+  handleProgressSong: (value: number) => void;
   handlePlaySong: (songId: number, playlist?: Playlist[]) => void;
   handlePauseSong: () => void;
   getCurrentSong: () => void;
@@ -48,6 +49,7 @@ const defaultContext: MusicStreamingContextType = {
   progress: 0,
   currentPlayedPlaylist: [],
   handleVolume: () => {},
+  handleProgressSong: () => {},
   handlePlaySong: () => {},
   handlePauseSong: () => {},
   getCurrentSong: () => {},
@@ -112,6 +114,17 @@ export default function MusicStreamingProvider({ children }: { children: React.R
     return currentPlayedPlaylist?.find((song) => song.songId === currentSongId)?.songs ?? songRef.current?.songs ?? null;
   }
 
+  // PROGRESS of a song
+  function handleProgressSong(value: number) {
+    if (!duration) return;
+
+    if (audioRef.current) {
+      audioRef.current.currentTime = (value * duration) / 100;
+    }
+
+    setCurrentSongTime(value);
+  }
+
   // PLAY song
   const handlePlaySong = useCallback((songId: number, playlist?: Playlist[]) => {
     if (!playlist) {
@@ -125,6 +138,7 @@ export default function MusicStreamingProvider({ children }: { children: React.R
 
     const index = playlist.indexOf(song);
 
+    // if no song is played or currently play a song and want to change to another song
     if (!songRef.current || songRef.current.songId !== songId) {
       if (!song.songs?.song_url) return;
 
@@ -179,7 +193,7 @@ export default function MusicStreamingProvider({ children }: { children: React.R
     if (nextSong?.songId != null) {
       handlePlaySong(nextSong.songId, currentPlayedPlaylist);
     }
-  }, [songIndex, currentPlayedPlaylist]);
+  }, [songIndex, currentPlayedPlaylist, currentSongId, handlePlaySong]);
 
   useEffect(
     function () {
@@ -188,6 +202,18 @@ export default function MusicStreamingProvider({ children }: { children: React.R
       if (!audio) return;
 
       if (!songRef.current) return;
+
+      function handleProgressUpdate() {
+        if (!audioRef.current) return;
+
+        if (!audioRef.current.duration) {
+          setProgress(0);
+          return;
+        }
+
+        setProgress((audioRef.current.currentTime / audioRef.current.duration) * 100);
+        setCurrentSongTime(audioRef.current.currentTime);
+      }
 
       function handleEnded() {
         if (songIndex === -1) return;
@@ -203,14 +229,16 @@ export default function MusicStreamingProvider({ children }: { children: React.R
         }
       }
 
+      audio.addEventListener("timeupdate", handleProgressUpdate);
       audio.addEventListener("ended", handleEnded);
 
       return () => {
+        audio.removeEventListener("timeupdate", handleProgressUpdate);
         audio.removeEventListener("ended", handleEnded);
       };
     },
-    [songIndex, currentPlayedPlaylist, handlePlaySong, handleNext],
+    [songIndex, currentPlayedPlaylist, handlePlaySong, handleNext, isLoopSong],
   );
 
-  return <MusicStreaming.Provider value={{ volume, setVolume, isPlaying, setIsPlaying, isEnding, setIsEnding, isLoopSong, setIsLoopSong, duration, songIndex, setSongIndex, currentSongId, currentSongTime, progress, currentPlayedPlaylist, handleVolume, handlePlaySong, handlePauseSong, getCurrentSong, audioRef, songRef }}>{children}</MusicStreaming.Provider>;
+  return <MusicStreaming.Provider value={{ volume, setVolume, isPlaying, setIsPlaying, isEnding, setIsEnding, isLoopSong, setIsLoopSong, duration, songIndex, setSongIndex, currentSongId, currentSongTime, progress, currentPlayedPlaylist, handleVolume, handleProgressSong, handlePlaySong, handlePauseSong, getCurrentSong, audioRef, songRef }}>{children}</MusicStreaming.Provider>;
 }

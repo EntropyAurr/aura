@@ -4,11 +4,11 @@ import { TRPCError } from "@trpc/server";
 import z from "zod";
 
 export const songsRouter = createTRPCRouter({
-  create: protectedProcedure.input(z.object({ id: z.number(), title: z.string(), artist: z.string(), song_url: z.string(), duration: z.number() })).mutation(async ({ input }) => {
+  create: protectedProcedure.input(z.object({ playlistId: z.number(), title: z.string(), artist: z.string(), song_url: z.string(), duration: z.number() })).mutation(async ({ input }) => {
     const hasSongUrl = input.song_url?.startsWith?.(supabaseUrl.replace(/\/$/, ""));
     const songUrl = hasSongUrl ? input.song_url : `${supabaseUrl}/storage/v1/object/public/songs/${input.song_url}`;
 
-    const { data: song, error } = await supabase.from("songs").insert({ playlistId: input.id, title: input.title, artist: input.artist, song_url: songUrl, duration: input.duration }).select().single();
+    const { data: song, error } = await supabase.from("songs").insert({ playlistId: input.playlistId, title: input.title, artist: input.artist, song_url: songUrl, duration: input.duration }).select().single();
 
     if (error) {
       console.log(error);

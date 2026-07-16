@@ -12,7 +12,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import z from "zod";
 
-const schema = z.object({ id: z.number(), title: z.string(), artist: z.string(), song_url: z.string(), duration: z.number(), file: z.instanceof(File) });
+const schema = z.object({ playlistId: z.number(), title: z.string(), artist: z.string(), song_url: z.string(), duration: z.number(), file: z.instanceof(File) });
 type FormData = z.infer<typeof schema>;
 
 interface SongCreateModalProps {
@@ -25,7 +25,7 @@ export function SongCreateModal({ open, onClose, playlistId }: SongCreateModalPr
   const { register, handleSubmit, setValue, reset, formState } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
-      id: playlistId,
+      playlistId: playlistId,
     },
   });
   const { errors } = formState;
@@ -71,14 +71,19 @@ export function SongCreateModal({ open, onClose, playlistId }: SongCreateModalPr
   async function onSubmit(data: FormData) {
     const file = data.file as File;
     const songTitle = file.name.replaceAll(/[^\w.-]/g, "_");
+
     const { error } = await supabase.storage.from("songs").upload(songTitle, file);
 
-    if (error) throw new Error(error.message);
+    // Ignore duplicate-file error and reuse the existing file in storage
+    if (error && error.message !== "The resource already exists") {
+      throw new Error(error.message);
+    }
 
     const songUrl = `${supabaseUrl}/storage/v1/object/public/songs/${songTitle}`;
 
     createSong.mutate({ ...data, song_url: songUrl });
-  }                                                                                                                                                                       
+  }
+
   return (
     <ResponsiveModal title="Create a song" open={open} onOpenChange={handleClose}>
       <form onSubmit={handleSubmit(onSubmit)}>
