@@ -23,6 +23,20 @@ export const songsRouter = createTRPCRouter({
     return song;
   }),
 
+  update: protectedProcedure.input(z.object({ songId: z.number(), title: z.string(), artist: z.string(), song_url: z.string() })).mutation(async ({ input }) => {
+    if (!input.songId) {
+      throw new TRPCError({ code: "BAD_REQUEST", message: "songId is not found" });
+    }
+
+    const { data: updatedSong, error } = await supabase.from("songs").update({ title: input.title, updated_at: new Date().toISOString() }).eq("id", input.songId).select().single();
+
+    if (error) {
+      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: error.message });
+    }
+
+    return updatedSong;
+  }),
+
   remove: protectedProcedure.input(z.object({ songId: z.number(), playlistId: z.number() })).mutation(async ({ input }) => {
     const { songId, playlistId } = input;
 

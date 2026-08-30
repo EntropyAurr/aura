@@ -20,6 +20,18 @@ export function SongMenu({ song, variants = "ghost" }: SongMenuProps) {
 
   const utils = trpc.useUtils();
 
+  const updateSong = trpc.songs.update.useMutation({
+    onSuccess: () => {
+      utils.songs.getMany.invalidate();
+      // utils.songs.getOne.invalidate({ id: playlist.id });
+
+      toast.success("Song updated successfully");
+    },
+    onError: () => {
+      toast.error("Something went wrong");
+    },
+  });
+
   const removeSong = trpc.songs.remove.useMutation({
     onSuccess: () => {
       utils.songs.getMany.invalidate();
@@ -51,7 +63,13 @@ export function SongMenu({ song, variants = "ghost" }: SongMenuProps) {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-        <DropdownMenuItem onClick={() => {}}>
+        <DropdownMenuItem
+          onClick={() => {
+            if (song.songId && song.songs?.title && song.songs?.artist && song.songs?.song_url) {
+              updateSong.mutate({ songId: song.songId, title: song.songs.title, artist: song.songs.artist, song_url: song.songs.song_url });
+            }
+          }}
+        >
           <SquarePen className="size-4" />
           Edit
         </DropdownMenuItem>
